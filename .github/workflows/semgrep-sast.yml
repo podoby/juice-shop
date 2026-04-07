@@ -1,0 +1,55 @@
+name: Semgrep Security Scan
+
+# -----------------------------
+# EVENTS (Triggers)
+# -----------------------------
+on:
+  push:
+    branches: ["main","dev" ]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron:"0 2 * * *"# Runs daily at 2 AM UTC
+  workflow_dispatch:# Manual trigger
+
+# -----------------------------
+# JOBS
+# -----------------------------
+jobs:
+  semgrep-scan:
+
+# -----------------------------
+# RUNNER
+# -----------------------------
+    runs-on: ubuntu-latest
+
+# -----------------------------
+# STEPS
+# -----------------------------
+    steps:
+
+# Step 1: Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+# Step 2: Set up Python (required for Semgrep)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version:"3.11"
+
+# Step 3: Install Semgrep
+      - name: Install Semgrep
+        run: pip install semgrep
+
+# Step 4: Run Semgrep scan
+      - name: Run Semgrep scan
+        run: semgrep scan --config=auto
+
+# Step 5: Upload results (optional)
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep-report.json
